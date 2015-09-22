@@ -9,9 +9,6 @@ import           Data.List                 (isSuffixOf, isInfixOf)
 import           Data.List                 (nub)
 import qualified Data.Map                  as M
 import           Data.Maybe                (fromMaybe)
-import           Filesystem.Path           (FilePath)
-import           Filesystem.Path.CurrentOS (encodeString)
-import           Prelude                   hiding (FilePath)
 import           System.FSNotify           (Event (..))
 
 
@@ -22,14 +19,13 @@ respondToEvent _ = Nothing
 
 processEvent :: M.Map String [TestFile] -> String -> String -> (FilePath, t) -> [Command]
 processEvent sourceToTestFileMap sourceFolder testFolder (filePath,_)
-        | (not . isInfixOf ".#") encodedFilePath && isSuffixOf "hs" encodedFilePath =
-          let fileType = typeOf encodedFilePath
+        | (not . isInfixOf ".#") filePath && isSuffixOf "hs" filePath =
+          let fileType = typeOf filePath
               commandCandidates = case fileType of
                 Source -> nub . map testFilePath . fromMaybe []
-                          $ M.lookup encodedFilePath sourceToTestFileMap
-                Test ->   [encodedFilePath]
-              maybeLacksTests = if commandCandidates == [] then [Echo (encodedFilePath ++ " does not have any associated tests...")] else []
-          in Echo (encodedFilePath ++ " changed") : maybeLacksTests ++
+                          $ M.lookup filePath sourceToTestFileMap
+                Test ->   [filePath]
+              maybeLacksTests = if commandCandidates == [] then [Echo (filePath ++ " does not have any associated tests...")] else []
+          in Echo (filePath ++ " changed") : maybeLacksTests ++
              map (RunHaskell sourceFolder testFolder ) commandCandidates
         | otherwise = []
-  where encodedFilePath = encodeString filePath

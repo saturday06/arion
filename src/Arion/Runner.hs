@@ -19,9 +19,7 @@ import           Control.Monad             (join)
 import           Data.IORef                (IORef, atomicModifyIORef', newIORef)
 import           Data.Map                  (Map)
 import qualified Data.Map                  as Map
-import           Data.Text                 (pack)
 import           Data.Version              (showVersion)
-import           Filesystem.Path.CurrentOS (fromText)
 import           System.IO
 import           System.Exit
 import           System.Directory          (canonicalizePath)
@@ -54,7 +52,7 @@ startWatching path sourceFolder testFolder manager = do
 
   lock <- newEmptyMVar
   inProgress <- newIORef Map.empty
-  _ <- watchTree manager (fromText $ pack path) (const True)
+  _ <- watchTree manager path (const True)
        (eventHandler lock inProgress (processEvent sourceToTestFileMap sourceFolder testFolder) . respondToEvent)
   forever $ threadDelay maxBound
 
